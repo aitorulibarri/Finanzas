@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ingreso: oklch(0.72 0.15 155);
+  --color-gasto: oklch(0.65 0.19 25);
+  --color-traspaso: oklch(0.68 0.12 250);
+  --color-ahorro: oklch(0.70 0.14 195);
+}
+
+html {
+  color-scheme: light dark;
+}
