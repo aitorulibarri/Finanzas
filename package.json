@@ -11,10 +11,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:tz": "TZ=Pacific/Kiritimati vitest run && TZ=Pacific/Niue vitest run"
+    "test:tz": "TZ=Pacific/Kiritimati vitest run && TZ=Pacific/Niue vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "date-fns": "^4.4.0",
     "dexie": "^4.4.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -29,7 +29,6 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-v8": "^5.0.1",
     "fake-indexeddb": "^6.2.5",
-    "jsdom": "^30.0.1",
     "oxlint": "^1.81.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",

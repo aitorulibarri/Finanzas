@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, test } from 'vitest'
 import {
   ahorroDelMes,
   consumoPresupuesto,
+  consumosDelMes,
+  evolucionPatrimonio,
   gastosDelMes,
   gastosPorCategoria,
   ingresosDelMes,
@@ -10,9 +12,11 @@ import {
   progresoObjetivo,
   rendimientoInversion,
   saldoCuenta,
+  serieMensual,
   tasaAhorro,
   valorCuenta,
 } from './calculos'
+import { ultimosMeses } from './fechas'
 import {
   unEstado,
   unaAportacion,
@@ -346,5 +350,94 @@ describe('objetivos de ahorro', () => {
     expect(p.completado).toBe(true)
     expect(p.restante).toBe(0)
     expect(p.cuotaMensual).toBeNull()
+  })
+})
+
+describe('series que alimentan los gráficos del resumen', () => {
+  function conHistorico(): EstadoFinanzas {
+    const estado = estadoBase()
+    estado.movimientos.push(
+      unMovimiento({ tipo: 'ingreso', importe: 200000, cuentaId: NOMINA, categoriaId: SALARIO, fecha: '2025-11-25' }),
+      unMovimiento({ tipo: 'gasto', importe: 50000, cuentaId: NOMINA, categoriaId: OCIO, fecha: '2025-11-10' }),
+      unMovimiento({ tipo: 'ingreso', importe: 190000, cuentaId: NOMINA, categoriaId: SALARIO, fecha: '2025-12-25' }),
+      unMovimiento({ tipo: 'gasto', importe: 80000, cuentaId: NOMINA, categoriaId: OCIO, fecha: '2025-12-20' }),
+      // Un traspaso en medio: no debe aparecer en ninguna de las dos series.
+      unMovimiento({
+        tipo: 'traspaso', importe: 100000, cuentaId: NOMINA,
+        cuentaDestinoId: AHORRO, categoriaId: undefined, fecha: '2025-12-28',
+      }),
+    )
+    return estado
+  }
+
+  test('serieMensual da un punto por mes en orden cronológico', () => {
+    const estado = conHistorico()
+    const serie = serieMensual(estado, ultimosMeses('2026-01', 3))
+    expect(serie.map((r) => r.mes)).toEqual(['2025-11', '2025-12', '2026-01'])
+    expect(serie.map((r) => r.ingresos)).toEqual([200000, 190000, 0])
+    expect(serie.map((r) => r.gastos)).toEqual([50000, 80000, 0])
+  })
+
+  test('el traspaso de diciembre no infla ninguna de las dos series', () => {
+    const serie = serieMensual(conHistorico(), ['2025-12'])
+    expect(serie[0].ingresos).toBe(190000)
+    expect(serie[0].gastos).toBe(80000)
+    expect(serie[0].ahorro).toBe(110000)
+  })
+
+  test('evolucionPatrimonio acumula al cierre de cada mes', () => {
+    const estado = conHistorico()
+    const evolucion = evolucionPatrimonio(estado, ultimosMeses('2026-01', 4))
+
+    // Antes de cualquier movimiento, el patrimonio son los saldos iniciales.
+    expect(evolucion[0]).toEqual({ mes: '2025-10', patrimonio: 420000 })
+    // Noviembre: +200.000 de nómina −50.000 de gasto.
+    expect(evolucion[1]).toEqual({ mes: '2025-11', patrimonio: 570000 })
+    // Diciembre: +190.000 −80.000. El traspaso no suma ni resta.
+    expect(evolucion[2]).toEqual({ mes: '2025-12', patrimonio: 680000 })
+    // Enero sin movimientos: se mantiene.
+    expect(evolucion[3]).toEqual({ mes: '2026-01', patrimonio: 680000 })
+  })
+
+  test('la serie de patrimonio nunca cambia por un traspaso', () => {
+    const estado = conHistorico()
+    const antes = evolucionPatrimonio(estado, ultimosMeses('2026-01', 4))
+    estado.movimientos.push(
+      unMovimiento({
+        tipo: 'traspaso', importe: 250000, cuentaId: NOMINA,
+        cuentaDestinoId: AHORRO, categoriaId: undefined, fecha: '2025-11-15',
+      }),
+    )
+    expect(evolucionPatrimonio(estado, ultimosMeses('2026-01', 4))).toEqual(antes)
+  })
+
+  test('gastosPorCategoria ordena de mayor a menor', () => {
+    const estado = estadoBase()
+    const COMIDA = 'k-comida'
+    estado.categorias.push(unaCategoria({ id: COMIDA, nombre: 'Comida', tipo: 'gasto' }))
+    estado.movimientos.push(
+      unMovimiento({ tipo: 'gasto', importe: 3000, cuentaId: NOMINA, categoriaId: OCIO }),
+      unMovimiento({ tipo: 'gasto', importe: 12000, cuentaId: NOMINA, categoriaId: COMIDA }),
+    )
+    const desglose = gastosPorCategoria(estado, '2026-01')
+    expect(desglose.map((d) => d.categoria.nombre)).toEqual(['Comida', 'Ocio'])
+    expect(desglose[0].porcentaje).toBeCloseTo(80)
+  })
+
+  test('consumosDelMes pone primero los presupuestos más apurados', () => {
+    const estado = estadoBase()
+    const COMIDA = 'k-comida'
+    estado.categorias.push(unaCategoria({ id: COMIDA, nombre: 'Comida', tipo: 'gasto' }))
+    estado.presupuestos.push(
+      unPresupuesto({ id: 'p-ocio', categoriaId: OCIO, importeMensual: 20000 }),
+      unPresupuesto({ id: 'p-comida', categoriaId: COMIDA, importeMensual: 30000 }),
+    )
+    estado.movimientos.push(
+      unMovimiento({ tipo: 'gasto', importe: 2000, cuentaId: NOMINA, categoriaId: OCIO }),
+      unMovimiento({ tipo: 'gasto', importe: 27000, cuentaId: NOMINA, categoriaId: COMIDA }),
+    )
+    const consumos = consumosDelMes(estado, '2026-01')
+    expect(consumos.map((c) => c.categoria.nombre)).toEqual(['Comida', 'Ocio'])
+    expect(consumos[0].porcentaje).toBeCloseTo(90)
   })
 })
