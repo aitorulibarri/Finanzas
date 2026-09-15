@@ -87,13 +87,13 @@ export function Resumen() {
     <div className="space-y-5">
       <div className="flex items-center gap-1">
         <Boton variante="fantasma" onClick={() => setMes(sumarMeses(mes, -1))} aria-label="Mes anterior">←</Boton>
-        <span className="min-w-40 text-center text-sm font-semibold capitalize">{formatearMes(mes)}</span>
+        <span className="min-w-40 text-center text-sm font-semibold first-letter:uppercase">{formatearMes(mes)}</span>
         <Boton variante="fantasma" onClick={() => setMes(sumarMeses(mes, 1))} aria-label="Mes siguiente">→</Boton>
       </div>
 
       {/* El patrimonio es la cifra con la que arranca la pantalla: es la única
           que responde de verdad a "cuánto tengo". */}
-      <Tarjeta className="bg-slate-900 text-white dark:bg-white dark:text-slate-900">
+      <Tarjeta fondo="bg-slate-900 dark:bg-white" className="text-white dark:text-slate-900">
         <p className="text-xs font-medium opacity-70">Patrimonio neto</p>
         <p className="mt-1 text-4xl font-bold tabular-nums">{formatearEuros(patrimonio)}</p>
       </Tarjeta>
@@ -171,7 +171,7 @@ export function Resumen() {
               <BarChart data={serie} margin={{ top: 4, right: 4, bottom: 0, left: -18 }}>
                 <CartesianGrid stroke="var(--color-viz-rejilla)" vertical={false} />
                 <XAxis dataKey="mes" tickLine={false} axisLine={false} fontSize={11} stroke="#94a3b8" />
-                <YAxis tickLine={false} axisLine={false} fontSize={11} stroke="#94a3b8" width={56}
+                <YAxis tickLine={false} axisLine={false} fontSize={11} stroke="#94a3b8" width={72}
                   tickFormatter={(v: number) => formatearEuros(Math.round(v * 100), true)} />
                 <Tooltip content={<TooltipEuros />} cursor={{ fill: 'var(--color-viz-rejilla)', opacity: 0.4 }} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
@@ -190,7 +190,7 @@ export function Resumen() {
               <LineChart data={evolucion} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
                 <CartesianGrid stroke="var(--color-viz-rejilla)" vertical={false} />
                 <XAxis dataKey="mes" tickLine={false} axisLine={false} fontSize={11} stroke="#94a3b8" />
-                <YAxis tickLine={false} axisLine={false} fontSize={11} stroke="#94a3b8" width={56}
+                <YAxis tickLine={false} axisLine={false} fontSize={11} stroke="#94a3b8" width={72}
                   tickFormatter={(v: number) => formatearEuros(Math.round(v * 100), true)} />
                 <Tooltip content={<TooltipEuros />} />
                 <Line

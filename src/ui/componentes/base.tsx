@@ -4,10 +4,27 @@ import type { Cents } from '../../dominio/dinero'
 
 /** Piezas comunes de interfaz. Todas responden a claro y oscuro. */
 
-export function Tarjeta({ children, className = '' }: { children: ReactNode; className?: string }) {
+/**
+ * Tarjeta base.
+ *
+ * `fondo` va aparte de `className` a propósito: en Tailwind, entre dos clases
+ * que tocan la misma propiedad gana la que aparezca después en la hoja de
+ * estilos, no la que se escriba después en el atributo. Pasar un `bg-*` por
+ * className junto al `bg-white` de aquí dejaba el fondo sin cambiar mientras
+ * el texto sí cambiaba, y la cifra quedaba blanca sobre blanco.
+ */
+export function Tarjeta({
+  children,
+  className = '',
+  fondo = 'bg-white dark:bg-slate-900',
+}: {
+  children: ReactNode
+  className?: string
+  fondo?: string
+}) {
   return (
     <div
-      className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 ${className}`}
+      className={`rounded-2xl border border-slate-200 p-4 shadow-sm dark:border-slate-800 ${fondo} ${className}`}
     >
       {children}
     </div>
@@ -90,7 +107,16 @@ export function Importe({
             ? 'text-red-600 dark:text-red-400'
             : 'text-slate-900 dark:text-slate-100'
 
-  const signo = tipo === 'ingreso' ? '+' : tipo === 'gasto' ? '−' : ''
+  /*
+   * Cero no lleva signo: no es ni positivo ni negativo, y "+0,00 €" en la
+   * tarjeta de ingresos de un mes sin ingresos se lee como un error.
+   *
+   * Sin tipo explícito el signo lo pone el propio importe, porque se pinta
+   * el valor absoluto: si no, un ahorro mensual de −45 € aparecería como
+   * "45,00 €" en rojo y se leería como un ahorro positivo.
+   */
+  const signo =
+    cents === 0 ? '' : tipo === 'ingreso' ? '+' : tipo === 'gasto' ? '−' : cents < 0 ? '−' : ''
 
   return (
     <span className={`tabular-nums font-semibold ${color} ${className}`}>
@@ -148,14 +174,23 @@ export function Modal({
   children: ReactNode
 }) {
   if (!abierto) return null
+  const idTitulo = `modal-${titulo.replace(/\s+/g, '-').toLowerCase()}`
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-4"
+      onKeyDown={(e) => e.key === 'Escape' && onCerrar()}
+    >
+      {/* role="dialog" y aria-modal dicen a los lectores de pantalla que lo de
+          detrás queda inerte mientras esto está abierto. */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={idTitulo}
         className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-5 shadow-xl sm:rounded-2xl dark:bg-slate-900"
         style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{titulo}</h2>
+          <h2 id={idTitulo} className="text-lg font-semibold text-slate-900 dark:text-slate-100">{titulo}</h2>
           <Boton variante="fantasma" onClick={onCerrar} aria-label="Cerrar">
             ✕
           </Boton>

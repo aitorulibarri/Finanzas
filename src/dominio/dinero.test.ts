@@ -98,3 +98,27 @@ describe('aTextoEditable es la inversa exacta de parseImporte', () => {
     expect(aTextoEditable(-4510)).toBe('-45,10')
   })
 })
+
+describe('el formato sigue la tipografía española, no la inglesa', () => {
+  test('cuatro cifras van SIN separador de millares', () => {
+    // No es un fallo: el español usa agrupación "min2", así que el separador
+    // aparece a partir de cinco cifras. Es lo que recomienda la RAE y lo que
+    // hace Intl por defecto. Este test existe para que nadie lo "corrija"
+    // añadiendo useGrouping:'always', que daría un formato incorrecto.
+    expect(normalizar(formatearEuros(420000))).toBe('4200,00 €')
+    expect(normalizar(formatearEuros(999900))).toBe('9999,00 €')
+  })
+
+  test('a partir de cinco cifras sí lo lleva', () => {
+    expect(normalizar(formatearEuros(1000000))).toBe('10.000,00 €')
+    expect(normalizar(formatearEuros(12345678))).toBe('123.456,78 €')
+  })
+
+  test('la coma es el separador decimal', () => {
+    expect(normalizar(formatearEuros(4550))).toBe('45,50 €')
+  })
+
+  test('el modo compacto quita los decimales', () => {
+    expect(normalizar(formatearEuros(123456, true))).toBe('1235 €')
+  })
+})

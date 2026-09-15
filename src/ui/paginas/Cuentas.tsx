@@ -28,7 +28,7 @@ export function Cuentas() {
 
   return (
     <div className="space-y-4">
-      <Tarjeta className="bg-slate-900 text-white dark:bg-white dark:text-slate-900">
+      <Tarjeta fondo="bg-slate-900 dark:bg-white" className="text-white dark:text-slate-900">
         <p className="text-xs font-medium opacity-70">Patrimonio neto</p>
         <p className="mt-1 text-3xl font-bold tabular-nums">{formatearEuros(patrimonioNeto(estado))}</p>
         <p className="mt-1 text-xs opacity-70">

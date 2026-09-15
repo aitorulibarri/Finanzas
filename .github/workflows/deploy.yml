@@ -1,0 +1,58 @@
+name: Desplegar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Permite lanzarlo a mano desde la pestaña Actions, útil mientras el
+  # trabajo aún vive en una rama y no se ha fusionado a main.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si se empujan dos commits seguidos, cancela el despliegue anterior en vez
+# de encolar dos publicaciones de la misma rama.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Las comprobaciones van antes de construir: más vale no publicar que
+      # publicar una versión con los números mal.
+      - name: Comprobar tipos y estilo
+        run: npm run lint
+
+      - name: Tests, incluidas dos zonas horarias extremas
+        run: npm run test:tz
+
+      - name: Construir
+        run: npm run build:pages
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  desplegar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v4

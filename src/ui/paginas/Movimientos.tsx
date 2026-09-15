@@ -55,7 +55,7 @@ export function Movimientos() {
           <Boton variante="fantasma" onClick={() => setMes(sumarMeses(mes, -1))} aria-label="Mes anterior">
             ←
           </Boton>
-          <span className="min-w-40 text-center text-sm font-semibold capitalize">{formatearMes(mes)}</span>
+          <span className="min-w-40 text-center text-sm font-semibold first-letter:uppercase">{formatearMes(mes)}</span>
           <Boton variante="fantasma" onClick={() => setMes(sumarMeses(mes, 1))} aria-label="Mes siguiente">
             →
           </Boton>

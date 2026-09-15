@@ -1,0 +1,22 @@
+name: Comprobaciones
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      # Se ejecuta bajo UTC+14 y UTC-11 para detectar cualquier conversión de
+      # zona horaria que se cuele en el manejo de fechas.
+      - run: npm run test:tz
+      - run: npm run build
