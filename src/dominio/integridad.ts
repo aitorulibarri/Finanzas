@@ -146,7 +146,11 @@ export function borrarObjetivo(estado: EstadoFinanzas, objetivoId: string): Casc
 export function borrarRecurrente(estado: EstadoFinanzas, recurrenteId: string): Cascada {
   const generados = estado.movimientos
     .filter((m) => m.recurrenteId === recurrenteId)
-    .map(({ recurrenteId: _, ...resto }) => resto)
+    .map((m) => {
+      const copia = { ...m }
+      delete copia.recurrenteId
+      return copia
+    })
 
   return { recurrentes: [recurrenteId], reescribir: { movimientos: generados } }
 }

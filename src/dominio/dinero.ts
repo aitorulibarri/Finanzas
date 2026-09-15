@@ -116,6 +116,20 @@ export function formatearConSigno(cents: Cents): string {
   return signo + formatearEuros(cents)
 }
 
+/**
+ * Céntimos al texto que se mete en un campo editable: 123456 -> "1234,56".
+ *
+ * Es la inversa de parseImporte y hace falta al precargar los formularios de
+ * edición. Va aquí y no repetida en cada formulario porque un redondeo
+ * distinto en uno de ellos haría que editar y guardar sin tocar nada
+ * cambiase el importe.
+ */
+export function aTextoEditable(cents: Cents): string {
+  const signo = cents < 0 ? '-' : ''
+  const absoluto = Math.abs(cents)
+  return `${signo}${Math.trunc(absoluto / 100)},${String(absoluto % 100).padStart(2, '0')}`
+}
+
 /** Suma exacta en céntimos. */
 export function sumar(...importes: Cents[]): Cents {
   return importes.reduce((total, i) => total + i, 0)

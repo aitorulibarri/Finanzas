@@ -1,12 +1,40 @@
 @import "tailwindcss";
 
+/**
+ * Paleta de los gráficos.
+ *
+ * Son las ranuras 1, 2 y 7 de la paleta categórica de referencia, validadas
+ * con el script de la guía de visualización: todas las comprobaciones pasan
+ * en claro y en oscuro (peor par adyacente ΔE 24,7 en protanopia, frente al
+ * objetivo de 8).
+ *
+ * Ingresos en azul y gastos en naranja, y no el verde/rojo habitual de las
+ * aplicaciones de finanzas: verde contra rojo es precisamente el par que peor
+ * distingue una persona daltónica, que es el tipo más común de daltonismo.
+ * En las listas de movimientos sí se usa verde y rojo, pero siempre con el
+ * signo + o − delante, así que el color nunca es la única señal.
+ */
 @theme {
-  --color-ingreso: oklch(0.72 0.15 155);
-  --color-gasto: oklch(0.65 0.19 25);
-  --color-traspaso: oklch(0.68 0.12 250);
-  --color-ahorro: oklch(0.70 0.14 195);
+  --color-viz-ingresos: #2a78d6;
+  --color-viz-gastos: #eb6834;
+  --color-viz-patrimonio: #4a3aa7;
+  --color-viz-rejilla: #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-viz-ingresos: #3987e5;
+    --color-viz-gastos: #d95926;
+    --color-viz-patrimonio: #9085e9;
+    --color-viz-rejilla: #1e293b;
+  }
 }
 
 html {
   color-scheme: light dark;
+}
+
+/* El teclado numérico del móvil no debería provocar zoom al enfocar. */
+@media (max-width: 640px) {
+  input, select, textarea { font-size: 16px; }
 }

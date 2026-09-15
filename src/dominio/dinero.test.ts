@@ -1,15 +1,16 @@
 import { describe, expect, test } from 'vitest'
-
-/** Intl es-ES separa importe y símbolo con espacio duro (U+00A0). */
-const normalizar = (s: string) => s.replace(/\u00a0/g, ' ')
 import {
   aCents,
+  aTextoEditable,
   formatearEuros,
   parseImporte,
   porcentaje,
   repartir,
   sumar,
 } from './dinero'
+
+/** Intl es-ES separa importe y símbolo con espacio duro (U+00A0). */
+const normalizar = (s: string) => s.replace(/\u00a0/g, ' ')
 
 describe('INV-3: la aritmética del dinero es exacta', () => {
   test('0,10 € + 0,20 € son exactamente 0,30 €', () => {
@@ -76,5 +77,24 @@ describe('porcentaje protege de la división por cero', () => {
 
   test('calcula bien el consumo de un presupuesto', () => {
     expect(porcentaje(4500, 20000)).toBeCloseTo(22.5)
+  })
+})
+
+describe('aTextoEditable es la inversa exacta de parseImporte', () => {
+  test.each([0, 5, 50, 100, 4500, 123456, 100000000, -4510])(
+    'ida y vuelta de %i céntimos',
+    (cents) => {
+      // Si esta propiedad se rompiera, abrir un movimiento para editarlo y
+      // guardarlo sin tocar nada le cambiaría el importe.
+      expect(parseImporte(aTextoEditable(cents))).toBe(cents)
+    },
+  )
+
+  test('formatea con dos decimales siempre', () => {
+    expect(aTextoEditable(4500)).toBe('45,00')
+    expect(aTextoEditable(5)).toBe('0,05')
+    expect(aTextoEditable(50)).toBe('0,50')
+    expect(aTextoEditable(123456)).toBe('1234,56')
+    expect(aTextoEditable(-4510)).toBe('-45,10')
   })
 })
