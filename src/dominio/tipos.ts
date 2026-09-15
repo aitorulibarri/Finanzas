@@ -47,7 +47,6 @@ export interface Cuenta {
   nombre: string
   tipo: TipoCuenta
   saldoInicial: Cents
-  /** Las de tipo tarjeta restan del patrimonio en vez de sumar. */
   color: string
   archivada: boolean
   orden: number
