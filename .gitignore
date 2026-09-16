@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 e2e/evidencia/
+
+# Informes de cobertura
+coverage/
