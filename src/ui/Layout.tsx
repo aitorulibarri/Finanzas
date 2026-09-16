@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { BannerInstalacion } from './componentes/BannerInstalacion'
 import { PAGINAS, type Pagina } from './navegacion'
 
 /**
@@ -50,7 +51,12 @@ export function Layout({
           <header className="border-b border-slate-200 px-4 py-4 md:px-8 dark:border-slate-800">
             <h2 className="text-xl font-bold">{PAGINAS[pagina].titulo}</h2>
           </header>
-          <div className="px-4 py-5 md:px-8">{children}</div>
+          <div className="px-4 py-5 md:px-8">
+            {/* Va en el armazón y no en una pantalla concreta para que se vea
+                se entre por donde se entre. */}
+            <BannerInstalacion />
+            {children}
+          </div>
         </main>
       </div>
 

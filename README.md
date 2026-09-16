@@ -23,6 +23,33 @@ la sección de copias de seguridad antes de meter meses de datos.
 - **Copia de seguridad** a fichero JSON, y restauración desde él.
 - Funciona **sin conexión** e **instalable** en el móvil como aplicación.
 
+## Instalarla en el móvil
+
+Es donde de verdad se usa: los gastos se apuntan de pie en una tienda, no sentado en un
+escritorio.
+
+**iPhone — instalarla no es opcional.** Safari borra el almacenamiento de un sitio tras
+siete días sin visitarlo, y ahí dentro está todo tu historial. Las aplicaciones añadidas
+a la pantalla de inicio quedan exentas de esa limpieza. Si la usas desde una pestaña
+durante un mes sin instalarla, un día la abres y no hay nada.
+
+1. Abre la dirección **en Safari**. Chrome en iPhone no sirve: no puede instalar nada.
+2. Botón **Compartir** (el cuadrado con la flecha, abajo).
+3. **Añadir a pantalla de inicio**.
+
+**Android.** Chrome propone instalarla solo; si no, menú **⋮ → Instalar aplicación**. La
+aplicación avisa desde dentro cuando detecta que se puede.
+
+Una vez instalada se abre a pantalla completa, sin barra de navegador, y funciona sin
+conexión.
+
+### Dónde acaba la copia de seguridad
+
+Al exportar desde el móvil, el fichero va a **Archivos → Descargas** en iPhone y a
+**Descargas** en Android. Muévelo a Drive, iCloud o mándatelo por correo: una copia
+guardada solo en el mismo móvil no te protege de perder el móvil, que es justo uno de
+los casos de los que la copia debería protegerte.
+
 ## Copias de seguridad: léelo
 
 Los datos viven en IndexedDB, en este navegador y en este dispositivo. Se pierden
@@ -63,7 +90,8 @@ no hace falta para usar la aplicación:
 ```bash
 npm install -D playwright && npx playwright install chromium
 npm run build && npm run preview &
-node e2e/validacion.mjs
+node e2e/validacion.mjs          # invariantes de punta a punta
+node e2e/banner-instalacion.mjs  # los cuatro casos del aviso de instalación
 ```
 
 ## Publicarlo en GitHub Pages
