@@ -12,8 +12,10 @@ import { Aviso, Boton } from './base'
  * pestaña durante un mes y no instalarla termina con la app vacía un día
  * cualquiera, sin aviso y sin forma de recuperarlo.
  *
- * En Android el navegador ofrece un diálogo de instalación nativo y basta con
- * lanzarlo. En iOS no existe ese evento, así que hay que explicar los pasos.
+ * En Android el navegador puede ofrecer un diálogo de instalación nativo, pero
+ * no siempre dispara el evento (Firefox, un aviso ya descartado en Chrome...),
+ * así que, igual que en iOS, se explican los pasos a mano y, si el evento
+ * llega, se añade además un botón que lanza el diálogo.
  */
 
 /** No está en lib.dom: solo la implementan los navegadores basados en Chromium. */
@@ -65,6 +67,10 @@ function esIOS(): boolean {
   return /Macintosh/.test(ua) && window.navigator.maxTouchPoints > 1
 }
 
+function esAndroid(): boolean {
+  return /Android/i.test(window.navigator.userAgent)
+}
+
 /** ¿Sigue vigente un descarte anterior? */
 function siguesDescartado(enIOS: boolean): boolean {
   const descarte = leerDescarte()
@@ -82,6 +88,7 @@ export function BannerInstalacion() {
    * disponible desde el principio.
    */
   const [ios] = useState(esIOS)
+  const [android] = useState(esAndroid)
   const [instalada, setInstalada] = useState(estaInstalada)
   const [descartado, setDescartado] = useState(() => siguesDescartado(esIOS()))
   const [evento, setEvento] = useState<EventoInstalacion | null>(null)
@@ -119,9 +126,9 @@ export function BannerInstalacion() {
   }
 
   if (instalada || descartado) return null
-  // Fuera de iOS solo se ofrece cuando el navegador dice que se puede: en un
-  // escritorio sin instalación posible, el aviso sería ruido.
-  if (!ios && !evento) return null
+  // Fuera de iOS y Android solo se ofrece cuando el navegador dice que se
+  // puede: en un escritorio sin instalación posible, el aviso sería ruido.
+  if (!ios && !android && !evento) return null
 
   return (
     <div className="mb-4" data-testid="banner-instalacion">
@@ -139,6 +146,18 @@ export function BannerInstalacion() {
                 <p className="mt-2">
                   Pulsa <strong>Compartir</strong> abajo y elige{' '}
                   <strong>Añadir a pantalla de inicio</strong>.
+                </p>
+              </>
+            ) : android ? (
+              <>
+                <p className="font-semibold">Añádela a tu pantalla de inicio</p>
+                <p className="mt-1">
+                  Se abre a pantalla completa, sin conexión, y es más difícil perder tus datos
+                  por error que desde una pestaña del navegador.
+                </p>
+                <p className="mt-2">
+                  Pulsa el menú <strong>⋮</strong> del navegador y elige{' '}
+                  <strong>Instalar aplicación</strong> (o <strong>Añadir a pantalla de inicio</strong>).
                 </p>
               </>
             ) : (

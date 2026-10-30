@@ -1,5 +1,5 @@
 /**
- * Los cuatro caminos del banner de instalación.
+ * Los cinco caminos del banner de instalación.
  *
  * Son cuatro ramas distintas y es fácil que una quede rota sin que nadie se
  * entere, porque cada una solo se ve en un dispositivo concreto.
@@ -21,7 +21,8 @@ const opcionesNavegador = existsSync(chromiumPreinstalado)
 const UA_IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'
 const DIRECCION = 'http://localhost:4173/'
 import { mkdirSync } from 'node:fs'
-const DIR = new URL('./evidencia/', import.meta.url).pathname
+import { fileURLToPath } from 'node:url'
+const DIR = fileURLToPath(new URL('./evidencia/', import.meta.url))
 mkdirSync(DIR, { recursive: true })
 let fallos = 0
 
@@ -143,6 +144,40 @@ const banner = (p) => p.locator('[data-testid=banner-instalacion]')
   await ctx.close()
 }
 
+// --- 5. Android: pasos a mano aunque el navegador no ofrezca instalar ---
+{
+  const UA_ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36'
+  const ctx = await navegador.newContext({
+    userAgent: UA_ANDROID, viewport: { width: 390, height: 844 },
+    isMobile: true, hasTouch: true, locale: 'es-ES',
+  })
+  const p = await ctx.newPage()
+  await p.goto(DIRECCION, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(800)
+  comprobar('5) Android sin evento -> aparece el banner', await banner(p).count(), 1)
+  const texto = await banner(p).textContent()
+  comprobar('5) explica el menú ⋮ e Instalar aplicación', texto.includes('Instalar aplicación'), true)
+  comprobar('5) sin los pasos de iOS', texto.includes('Compartir'), false)
+  comprobar('5) sin botón Instalar si no hay evento', await banner(p).getByRole('button', { name: 'Instalar' }).count(), 0)
+  const scrollH = await p.evaluate(() => document.documentElement.scrollWidth)
+  comprobar('5) sin scroll horizontal a 390 px', scrollH <= 390, true)
+  await p.screenshot({ path: `${DIR}/22-banner-android-pasos.png`, fullPage: false })
+
+  await p.evaluate(() => {
+    const e = new Event('beforeinstallprompt')
+    Object.assign(e, { prompt: async () => {}, userChoice: Promise.resolve({ outcome: 'accepted' }) })
+    window.dispatchEvent(e)
+  })
+  await p.waitForTimeout(400)
+  comprobar('5) con evento se añade el botón Instalar', await banner(p).getByRole('button', { name: 'Instalar' }).count(), 1)
+
+  await banner(p).getByRole('button', { name: 'Descartar aviso' }).click()
+  await p.reload({ waitUntil: 'networkidle' })
+  await p.waitForTimeout(800)
+  comprobar('5) descartado en Android se recuerda', await banner(p).count(), 0)
+  await ctx.close()
+}
+
 await navegador.close()
-console.log(`\n${fallos === 0 ? '*** LOS CUATRO CAMINOS CORRECTOS ***' : `*** ${fallos} FALLOS ***`}`)
+console.log(`\n${fallos === 0 ? '*** LOS CINCO CAMINOS CORRECTOS ***' : `*** ${fallos} FALLOS ***`}`)
 process.exit(fallos ? 1 : 0)
