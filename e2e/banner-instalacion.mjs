@@ -178,6 +178,28 @@ const banner = (p) => p.locator('[data-testid=banner-instalacion]')
   await ctx.close()
 }
 
+// --- 6. Android: los pasos dependen del navegador ---
+{
+  const BASE = 'Mozilla/5.0 (Linux; Android 14; SM-S911B)'
+  const casos = [
+    ['Samsung Internet', `${BASE} AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0.0.0 Mobile Safari/537.36`, 'Añadir página a'],
+    ['Firefox', 'Mozilla/5.0 (Android 14; Mobile; rv:130.0) Gecko/130.0 Firefox/130.0', 'Instalar'],
+    ['Edge', `${BASE} AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 EdgA/130.0.0.0`, 'Añadir a pantalla de inicio'],
+    ['navegador integrado (WebView)', 'Mozilla/5.0 (Linux; Android 14; SM-S911B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.0.0 Mobile Safari/537.36', 'Abrir en el navegador'],
+    ['Chrome', 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36', 'Instalar aplicación'],
+  ]
+  for (const [nombre, ua, esperado] of casos) {
+    const ctx = await navegador.newContext({ userAgent: ua, viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'es-ES' })
+    const p = await ctx.newPage()
+    await p.goto(DIRECCION, { waitUntil: 'networkidle' })
+    await p.waitForTimeout(600)
+    const texto = (await banner(p).textContent()) ?? ''
+    comprobar(`6) ${nombre} -> dice "${esperado}"`, texto.includes(esperado), true)
+    comprobar(`6) ${nombre} -> sin los pasos de iOS`, texto.includes('Compartir'), false)
+    await ctx.close()
+  }
+}
+
 await navegador.close()
-console.log(`\n${fallos === 0 ? '*** LOS CINCO CAMINOS CORRECTOS ***' : `*** ${fallos} FALLOS ***`}`)
+console.log(`\n${fallos === 0 ? '*** LOS SEIS CAMINOS CORRECTOS ***' : `*** ${fallos} FALLOS ***`}`)
 process.exit(fallos ? 1 : 0)

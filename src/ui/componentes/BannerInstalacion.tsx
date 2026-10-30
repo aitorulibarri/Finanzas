@@ -71,6 +71,65 @@ function esAndroid(): boolean {
   return /Android/i.test(window.navigator.userAgent)
 }
 
+type NavegadorAndroid = 'integrado' | 'samsung' | 'firefox' | 'edge' | 'opera' | 'otro'
+
+/**
+ * El menú para instalar cambia de un navegador a otro, y en Android no hay
+ * uno por defecto: cada fabricante trae el suyo. Se distingue por el user
+ * agent; lo no reconocido (Chrome, Brave, Vivaldi...) comparte el menú de
+ * Chrome. Los navegadores integrados en otras apps (WhatsApp, Instagram,
+ * un WebView) no pueden instalar nada y hay que sacarlos de ahí.
+ */
+function navegadorAndroid(): NavegadorAndroid {
+  const ua = window.navigator.userAgent
+  if (/; wv\)|FBAN|FBAV|Instagram|Line\/|Telegram/i.test(ua)) return 'integrado'
+  if (/SamsungBrowser/i.test(ua)) return 'samsung'
+  if (/Firefox/i.test(ua)) return 'firefox'
+  if (/EdgA/i.test(ua)) return 'edge'
+  if (/OPR\/|Opera/i.test(ua)) return 'opera'
+  return 'otro'
+}
+
+function PasosAndroid({ navegador }: { navegador: NavegadorAndroid }) {
+  switch (navegador) {
+    case 'integrado':
+      return (
+        <>
+          Estás en el navegador de otra aplicación y desde aquí no se puede instalar. Abre este
+          enlace en tu navegador (menú <strong>⋮</strong> → <strong>Abrir en el navegador</strong>).
+        </>
+      )
+    case 'samsung':
+      return (
+        <>
+          Pulsa el menú <strong>☰</strong>, luego <strong>Añadir página a</strong> y elige{' '}
+          <strong>Pantalla de inicio</strong>.
+        </>
+      )
+    case 'firefox':
+      return (
+        <>
+          Pulsa el menú <strong>⋮</strong> y elige <strong>Instalar</strong> (o{' '}
+          <strong>Añadir a la pantalla de inicio</strong>).
+        </>
+      )
+    case 'edge':
+      return (
+        <>
+          Pulsa el menú <strong>⋯</strong> y elige <strong>Añadir a pantalla de inicio</strong>{' '}
+          (o <strong>Añadir al teléfono</strong>).
+        </>
+      )
+    default:
+      return (
+        <>
+          Pulsa el menú del navegador (<strong>⋮</strong>) y elige{' '}
+          <strong>Instalar aplicación</strong> o <strong>Añadir a pantalla de inicio</strong>.
+        </>
+      )
+  }
+}
+
 /** ¿Sigue vigente un descarte anterior? */
 function siguesDescartado(enIOS: boolean): boolean {
   const descarte = leerDescarte()
@@ -89,6 +148,7 @@ export function BannerInstalacion() {
    */
   const [ios] = useState(esIOS)
   const [android] = useState(esAndroid)
+  const [navegadorDeAndroid] = useState(navegadorAndroid)
   const [instalada, setInstalada] = useState(estaInstalada)
   const [descartado, setDescartado] = useState(() => siguesDescartado(esIOS()))
   const [evento, setEvento] = useState<EventoInstalacion | null>(null)
@@ -156,8 +216,11 @@ export function BannerInstalacion() {
                   por error que desde una pestaña del navegador.
                 </p>
                 <p className="mt-2">
-                  Pulsa el menú <strong>⋮</strong> del navegador y elige{' '}
-                  <strong>Instalar aplicación</strong> (o <strong>Añadir a pantalla de inicio</strong>).
+                  <PasosAndroid navegador={navegadorDeAndroid} />
+                </p>
+                <p className="mt-2 text-xs opacity-80">
+                  Si tras instalarla no ves el icono en la pantalla de inicio, búscala en la lista
+                  de todas tus aplicaciones.
                 </p>
               </>
             ) : (
