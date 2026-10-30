@@ -8,6 +8,17 @@ todo se guarda en el almacenamiento local de tu dispositivo. Eso significa que
 nadie puede leer tus finanzas, y también que **nadie puede recuperártelas**. Lee
 la sección de copias de seguridad antes de meter meses de datos.
 
+## Varios usuarios
+
+Cualquiera puede usar la misma dirección web y nadie ve las cuentas de nadie: cada
+persona tiene sus datos en **su propio navegador y dispositivo**, y no existe ningún
+servidor donde se mezclen. Cada usuario instala la aplicación en su móvil u
+ordenador y empieza con la suya vacía.
+
+Lo que implica: dos personas que compartan **el mismo navegador del mismo
+dispositivo** sí compartirían datos. Si hace falta, cada una debe usar su propio
+dispositivo o su propio perfil de navegador.
+
 ## Qué hace
 
 - **Ingresos y gastos** con categorías, subcategorías y búsqueda por mes.
