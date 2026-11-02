@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react'
+import { useZonaVisible } from '../useTecladoVirtual'
 import { formatearEuros } from '../../dominio/dinero'
 import type { Cents } from '../../dominio/dinero'
 
@@ -173,11 +174,14 @@ export function Modal({
   onCerrar: () => void
   children: ReactNode
 }) {
+  const zona = useZonaVisible(abierto)
   if (!abierto) return null
   const idTitulo = `modal-${titulo.replace(/\s+/g, '-').toLowerCase()}`
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-4"
+      className="fixed inset-x-0 top-0 bottom-0 z-50 flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-4"
+      // Con el teclado abierto, el modal se ciñe a lo que se ve de la pantalla.
+      style={zona ? { top: zona.top, bottom: 'auto', height: zona.height } : undefined}
       onKeyDown={(e) => e.key === 'Escape' && onCerrar()}
     >
       {/* role="dialog" y aria-modal dicen a los lectores de pantalla que lo de
@@ -186,7 +190,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={idTitulo}
-        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-5 shadow-xl sm:rounded-2xl dark:bg-slate-900"
+        className="max-h-[92%] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-5 shadow-xl sm:rounded-2xl dark:bg-slate-900"
         style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="mb-4 flex items-center justify-between">

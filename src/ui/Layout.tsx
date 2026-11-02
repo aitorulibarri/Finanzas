@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { BannerInstalacion } from './componentes/BannerInstalacion'
 import { PAGINAS, type Pagina } from './navegacion'
+import { useCentrarCampoEnfocado } from './useTecladoVirtual'
 
 /**
  * Armazón de la aplicación.
@@ -18,6 +19,7 @@ export function Layout({
   onNavegar: (p: Pagina) => void
   children: ReactNode
 }) {
+  useCentrarCampoEnfocado()
   const entradas = Object.entries(PAGINAS) as Array<[Pagina, (typeof PAGINAS)[Pagina]]>
 
   return (
