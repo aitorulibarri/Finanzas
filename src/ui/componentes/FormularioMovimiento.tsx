@@ -172,6 +172,16 @@ export function FormularioMovimiento({
         </div>
       </Campo>
 
+      {/* Los dos campos de texto van juntos arriba: así se ven siempre por
+          encima del teclado, sin tener que desplazar la lista de categorías. */}
+      <Campo etiqueta="Concepto (opcional)">
+        <Entrada
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          placeholder={nombrePorDefecto()}
+        />
+      </Campo>
+
       {tipo !== 'traspaso' && (
         <Campo etiqueta="Categoría" error={errores.categoriaId}>
           <div className="flex flex-wrap gap-1.5">
@@ -230,14 +240,6 @@ export function FormularioMovimiento({
           <Entrada type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
         </Campo>
       )}
-
-      <Campo etiqueta="Concepto (opcional)">
-        <Entrada
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          placeholder={nombrePorDefecto()}
-        />
-      </Campo>
 
       <div className="flex gap-2 pt-1">
         <Boton variante="primario" onClick={enviar} className="flex-1 !py-2.5">

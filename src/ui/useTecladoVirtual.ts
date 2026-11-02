@@ -33,22 +33,37 @@ export function useZonaVisible(activo: boolean): { top: number; height: number }
 }
 
 /**
- * Al enfocar un campo, lo centra en pantalla cuando termina de salir el
- * teclado. Sin esto, en algunos móviles el campo queda justo debajo.
+ * Mantiene a la vista el campo que se está escribiendo.
+ *
+ * Se centra al enfocar y otra vez cada vez que cambia la zona visible: en
+ * algunos móviles el teclado tarda más de lo previsto en salir, y centrar solo
+ * una vez, con un retardo fijo, deja el campo tapado si el aviso llega tarde.
  */
 export function useCentrarCampoEnfocado(): void {
   useEffect(() => {
     let temporizador: number | undefined
-    const alEnfocar = (e: FocusEvent) => {
-      const el = e.target
-      if (!(el instanceof HTMLElement) || !el.matches('input, select, textarea')) return
+    const esCampo = (el: Element | null): el is HTMLElement =>
+      el instanceof HTMLElement && el.matches('input, select, textarea')
+
+    const centrar = (retardo: number) => {
       window.clearTimeout(temporizador)
-      // El teclado tarda en animarse; medir antes da una posición vieja.
-      temporizador = window.setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350)
+      temporizador = window.setTimeout(() => {
+        const el = document.activeElement
+        if (esCampo(el)) el.scrollIntoView({ block: 'center', behavior: 'auto' })
+      }, retardo)
     }
+
+    const alEnfocar = (e: FocusEvent) => {
+      if (esCampo(e.target as Element)) centrar(300)
+    }
+    const alCambiarZona = () => centrar(80)
+
     document.addEventListener('focusin', alEnfocar)
+    const vv = window.visualViewport
+    vv?.addEventListener('resize', alCambiarZona)
     return () => {
       document.removeEventListener('focusin', alEnfocar)
+      vv?.removeEventListener('resize', alCambiarZona)
       window.clearTimeout(temporizador)
     }
   }, [])
