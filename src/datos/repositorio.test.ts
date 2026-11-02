@@ -38,6 +38,21 @@ describe('carga inicial y semilla', () => {
     expect(estado.configuracion.semillaAplicada).toBe(true)
   })
 
+  test('una base ya sembrada recibe Inversiones una sola vez', async () => {
+    const estado = await cargarConSemilla(adaptador)
+    // Simula una base anterior: sin la categoría y sin el flag.
+    await adaptador.borrar('categorias', ['cat-inversion'])
+    await adaptador.guardarConfiguracion({ ...estado.configuracion, semillaInversionAplicada: undefined })
+
+    const migrada = await cargarConSemilla(adaptador)
+    expect(migrada.categorias.some((c) => c.id === 'cat-inversion')).toBe(true)
+
+    // Si la borras después, no vuelve.
+    await adaptador.borrar('categorias', ['cat-inversion'])
+    const recargada = await cargarConSemilla(adaptador)
+    expect(recargada.categorias.some((c) => c.id === 'cat-inversion')).toBe(false)
+  })
+
   test('el segundo arranque no duplica las categorías', async () => {
     const primera = await cargarConSemilla(adaptador)
     const segunda = await cargarConSemilla(adaptador)

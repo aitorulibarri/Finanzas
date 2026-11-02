@@ -52,6 +52,7 @@ const SEMILLAS: Semilla[] = [
   { id: 'cat-ropa', nombre: 'Ropa', tipo: 'gasto', icono: '👕', color: '#ec4899' },
   { id: 'cat-educacion', nombre: 'Educación', tipo: 'gasto', icono: '📚', color: '#6366f1' },
   { id: 'cat-regalos', nombre: 'Regalos', tipo: 'gasto', icono: '🎀', color: '#f472b6' },
+  { id: 'cat-inversion', nombre: 'Inversiones', tipo: 'gasto', icono: '💶', color: '#eab308' },
   { id: 'cat-impuestos', nombre: 'Impuestos', tipo: 'gasto', icono: '🧾', color: '#64748b' },
   { id: 'cat-otros-gastos', nombre: 'Otros gastos', tipo: 'gasto', icono: '📦', color: '#94a3b8' },
 ]
@@ -61,6 +62,12 @@ const SEMILLAS: Semilla[] = [
  * Se garantiza que siempre existe para que el borrado nunca deje huérfanos.
  */
 export const CATEGORIA_POR_DEFECTO = 'cat-otros-gastos'
+
+/** Categoría de inversión, que las bases ya creadas reciben una sola vez. */
+export function categoriaInversion(orden: number): Categoria {
+  const s = SEMILLAS.find((x) => x.id === 'cat-inversion')!
+  return { ...s, archivada: false, orden }
+}
 
 export function categoriasIniciales(): Categoria[] {
   return SEMILLAS.map((s, i) => ({ ...s, archivada: false, orden: i }))

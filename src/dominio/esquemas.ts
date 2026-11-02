@@ -164,6 +164,7 @@ export const esquemaConfiguracion = z.object({
   ultimaCopia: fechaISO.optional(),
   cuentaPorDefectoId: z.string().optional(),
   semillaAplicada: z.boolean(),
+  semillaInversionAplicada: z.boolean().optional(),
 })
 
 export const esquemaEstado = z.object({

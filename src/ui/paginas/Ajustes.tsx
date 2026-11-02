@@ -384,7 +384,7 @@ function SeccionRecurrentes() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{r.nombre}</p>
                     <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                      {FRECUENCIAS[r.frecuencia]} · {nombreCuenta(r.cuentaId)}
+                      {FRECUENCIAS[r.frecuencia]} · {nombreCuenta(r.cuentaId)}{r.fechaFin ? ` · hasta ${formatearFecha(r.fechaFin)}` : ''}
                       {r.activo && siguiente ? ` · próximo ${formatearFecha(siguiente)}` : ''}
                       {!r.activo && ' · pausado'}
                     </p>
@@ -442,6 +442,7 @@ function FormularioRecurrente({
   const [diaDelMes, setDiaDelMes] = useState(String(inicial?.diaDelMes ?? 1))
   const [diaDeLaSemana, setDiaDeLaSemana] = useState(String(inicial?.diaDeLaSemana ?? 1))
   const [fechaInicio, setFechaInicio] = useState(inicial?.fechaInicio ?? hoy())
+  const [fechaFin, setFechaFin] = useState(inicial?.fechaFin ?? '')
   const [error, setError] = useState('')
 
   const categorias = estado.categorias.filter(
@@ -452,6 +453,7 @@ function FormularioRecurrente({
     if (!nombre.trim()) { setError('Ponle un nombre'); return }
     const centimos = parseImporte(importe)
     if (centimos === null || centimos <= 0) { setError('Escribe un importe mayor que cero'); return }
+    if (fechaFin && fechaFin < fechaInicio) { setError('La fecha final no puede ser anterior al inicio'); return }
     if (tipo !== 'traspaso' && !categoriaId) { setError('Elige una categoría'); return }
     if (tipo === 'traspaso' && !cuentaDestinoId) { setError('Elige la cuenta de destino'); return }
 
@@ -468,7 +470,7 @@ function FormularioRecurrente({
         diaDelMes: frecuencia === 'semanal' ? undefined : Number(diaDelMes),
         diaDeLaSemana: frecuencia === 'semanal' ? Number(diaDeLaSemana) : undefined,
         fechaInicio,
-        fechaFin: inicial?.fechaFin,
+        fechaFin: fechaFin || undefined,
         ultimaGeneracion: inicial?.ultimaGeneracion,
         activo: inicial?.activo ?? true,
       },
@@ -550,9 +552,17 @@ function FormularioRecurrente({
         </Aviso>
       )}
 
-      <Campo etiqueta="Empieza el">
-        <Entrada type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} />
-      </Campo>
+      <div className="grid grid-cols-2 gap-3">
+        <Campo etiqueta="Empieza el">
+          <Entrada type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} />
+        </Campo>
+        <Campo etiqueta="Termina el (opcional)">
+          <Entrada type="date" value={fechaFin} min={fechaInicio} onChange={(e) => setFechaFin(e.target.value)} />
+        </Campo>
+      </div>
+      {frecuencia === 'anual' && (
+        <Aviso tono="info">Se repetirá cada año en el mes de la fecha de inicio.</Aviso>
+      )}
 
       <div className="flex gap-2 pt-1">
         <Boton variante="primario" onClick={enviar} className="flex-1">Guardar</Boton>

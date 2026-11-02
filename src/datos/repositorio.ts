@@ -1,7 +1,7 @@
 import type { Cascada } from '../dominio/integridad'
 import { estadoVacio, type Configuracion, type EstadoFinanzas } from '../dominio/tipos'
 import type { BaseFinanzas } from './db'
-import { categoriasIniciales } from './semilla'
+import { categoriaInversion, categoriasIniciales } from './semilla'
 
 /** Tablas de entidades con id; la configuración va aparte porque es única. */
 export type TablaEntidad = Exclude<keyof EstadoFinanzas, 'configuracion'>
@@ -106,7 +106,7 @@ export function adaptadorDexie(db: BaseFinanzas): StorageAdapter {
 export async function cargarConSemilla(adaptador: StorageAdapter): Promise<EstadoFinanzas> {
   const estado = await adaptador.cargar()
 
-  if (estado.configuracion.semillaAplicada) return estado
+  if (estado.configuracion.semillaAplicada) return añadirCategoriaInversion(adaptador, estado)
 
   if (estado.categorias.length > 0) {
     // Ya hay categorías: no sembrar, solo dejar constancia de que no hace falta.
@@ -116,11 +116,34 @@ export async function cargarConSemilla(adaptador: StorageAdapter): Promise<Estad
   }
 
   const categorias = categoriasIniciales()
-  const configuracion: Configuracion = { ...estado.configuracion, semillaAplicada: true }
+  const configuracion: Configuracion = {
+    ...estado.configuracion,
+    semillaAplicada: true,
+    semillaInversionAplicada: true,
+  }
 
   await adaptador.guardar('categorias', categorias)
   await adaptador.guardarConfiguracion(configuracion)
 
+  return { ...estado, categorias, configuracion }
+}
+
+/**
+ * Ofrece una sola vez la categoría Inversiones a quien ya tenía la base
+ * creada. El flag evita que reaparezca si luego la borras.
+ */
+async function añadirCategoriaInversion(
+  adaptador: StorageAdapter,
+  estado: EstadoFinanzas,
+): Promise<EstadoFinanzas> {
+  if (estado.configuracion.semillaInversionAplicada) return estado
+  const configuracion: Configuracion = { ...estado.configuracion, semillaInversionAplicada: true }
+  const existe = estado.categorias.some((c) => c.id === 'cat-inversion')
+  const categorias = existe
+    ? estado.categorias
+    : [...estado.categorias, categoriaInversion(estado.categorias.length)]
+  if (!existe) await adaptador.guardar('categorias', [categorias[categorias.length - 1]])
+  await adaptador.guardarConfiguracion(configuracion)
   return { ...estado, categorias, configuracion }
 }
 

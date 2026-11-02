@@ -188,6 +188,8 @@ export interface Configuracion {
   /** Cuenta preseleccionada al dar de alta un movimiento. */
   cuentaPorDefectoId?: string
   semillaAplicada: boolean
+  /** Categorías añadidas a la semilla después del primer arranque, ya ofrecidas. */
+  semillaInversionAplicada?: boolean
 }
 
 /** Estado completo, tal y como viaja en la copia de seguridad. */
