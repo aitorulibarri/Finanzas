@@ -53,6 +53,7 @@ Hay diez con test (INV-1…10, tabla en el README). Los que más condicionan el 
 - **Fecha = string `'YYYY-MM-DD'`**, nunca `Date` ni timestamp, para que un gasto del 31/01 23:00 no cambie de mes según la zona horaria. Por eso `test:tz` existe.
 - **El saldo se deriva de los movimientos**, nunca se almacena. Un **traspaso** no es ingreso ni gasto ni consume presupuesto y no cambia el patrimonio.
 - **Los borrados pasan por `integridad.ts`**: son funciones puras que devuelven una `Cascada` (qué borrar/reescribir) o un `Bloqueo`; `aplicarCascada` la ejecuta en la base y `aplicarCascadaEnMemoria` en el estado. No borrar registros directamente con `eliminar` si tienen dependientes (p. ej. borrar un traspaso arrastra sus aportaciones a objetivos).
+- **Semilla de categorías para bases ya creadas**: `cargarConSemilla` solo siembra una vez (`semillaAplicada`). Para que quien ya usa la app reciba una categoría nueva hace falta una migración con su propio flag opcional en `Configuracion` (ver `semillaInversionAplicada` y `añadirCategoriaInversion` en `repositorio.ts`), o se duplicaría o reaparecería tras borrarla.
 - **Esquema de IndexedDB**: nunca editar `this.version(1)` en `db.ts`; un cambio de esquema es un `.version(2)` nuevo con su `upgrade`, o las bases ya creadas en los navegadores de los usuarios dejarán de abrir. Si cambia la forma de los datos, subir también `VERSION_ESQUEMA` (`esquemas.ts`) y mantener compatible la importación de copias antiguas.
 
 ## PWA y aviso de instalación
@@ -60,3 +61,10 @@ Hay diez con test (INV-1…10, tabla en el README). Los que más condicionan el 
 `vite-plugin-pwa` (`registerType: 'autoUpdate'`) genera manifest y service worker; `start_url`/`scope` dependen de `GITHUB_PAGES`. Tras un despliegue, un móvil con la app abierta puede seguir sirviendo la versión anterior hasta cerrarla del todo.
 
 `ui/componentes/BannerInstalacion.tsx` tiene ramas distintas por plataforma: iOS (pasos a mano; el aviso reaparece a los 5 días porque Safari borra el almacenamiento a los 7 sin instalar), Android (pasos a mano según navegador por user agent, más botón **Instalar** si llega `beforeinstallprompt`) y otros (solo con el evento). Los e2e simulan `beforeinstallprompt` con un evento inventado: el diálogo nativo real no está verificado en un dispositivo físico, y Chromium automatizado no lo dispara.
+
+## Móvil: teclado virtual y pruebas
+
+- En Android (Chrome ≥108 y derivados, como el navegador de Xiaomi) el teclado se pinta **encima** de la página sin reducir el viewport. `Modal` (`base.tsx`) se ciñe a `visualViewport` vía `useZonaVisible`, y `useCentrarCampoEnfocado` (montado en `Layout`) recentra el campo enfocado; ambos viven en `ui/useTecladoVirtual.ts`. `index.html` añade `interactive-widget=resizes-content`. No volver a un modal `fixed inset-0` pegado abajo sin esto.
+- En formularios largos, poner los campos de texto arriba (en `FormularioMovimiento` el concepto va junto al importe, antes de las categorías) para que queden por encima del teclado.
+- Redimensionar la ventana de Chrome no cambia `innerWidth`. Para ver el diseño móvil, incrustar la app en un `<iframe>` de 390 px (misma origin); un teclado se simula sustituyendo `window.visualViewport` del iframe por un `EventTarget` con `height`/`offsetTop`. No sustituye a probar en un dispositivo real: el fallo del teclado en Xiaomi no está verificado en uno físico.
+- Las pruebas contra producción escriben en el IndexedDB real del navegador (`finanzas`): borrarlo al terminar (`indexedDB.deleteDatabase('finanzas')`).
