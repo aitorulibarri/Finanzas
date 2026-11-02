@@ -383,7 +383,7 @@ function SeccionRecurrentes() {
                 <li key={r.id} className={`flex items-center gap-3 p-3 ${r.activo ? '' : 'opacity-50'}`}>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{r.nombre}</p>
-                    <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {FRECUENCIAS[r.frecuencia]} · {nombreCuenta(r.cuentaId)}{r.fechaFin ? ` · hasta ${formatearFecha(r.fechaFin)}` : ''}
                       {r.activo && siguiente ? ` · próximo ${formatearFecha(siguiente)}` : ''}
                       {!r.activo && ' · pausado'}
